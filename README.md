@@ -139,6 +139,10 @@ you run the script.
 same when it is reproduced. It does not produce PDF/A-1a, which also
 requires a tagged logical structure, or the later parts of PDF/A.
 
+## Author
+
+Ivan Raikov
+
 ## License
 
-BSD. Written by Ivan Raikov.
+BSD. See [LICENSE](LICENSE).
