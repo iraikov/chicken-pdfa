@@ -19,26 +19,11 @@ passed the check.
 
 ## Requirements
 
-- CHICKEN 6
-- Eggs: `pdf`, `pdf-truetype`, `srfi-1`, `srfi-13`, `message-digest`,
+- CHICKEN 6 eggs: `pdf`, `pdf-truetype`, `srfi-1`, `srfi-13`, `message-digest`,
   `md5`, `sxml-transforms`, `datatype`
 - For the tests: the `test` egg
 - Optional: [veraPDF](https://verapdf.org), to validate the output
   with an independent checker
-
-## Installation
-
-From the repository root:
-
-```bash
-chicken-install
-```
-
-To install and run the unit tests:
-
-```bash
-chicken-install -test
-```
 
 ## Quick start
 
@@ -134,16 +119,19 @@ The unit tests are in [tests/run.scm](tests/run.scm) and run with
 
 [tests/verapdf-check.sh](tests/verapdf-check.sh) writes a set of test
 documents and validates each one with veraPDF. Documents named
-`pass-*` must pass and documents named `fail-*` must fail. Install the
-egg first, then run:
+`pass-*` must pass and documents named `fail-*` must fail. Most of the
+documents need an RGB ICC profile (version 2) and a TrueType font whose
+licence allows embedding. Name them with environment variables:
 
 ```bash
-CSI=csi tests/verapdf-check.sh
+PDFA_ICC_PROFILE=path/to/sRGB.icc PDFA_TTF_FONT=path/to/font.ttf tests/verapdf-check.sh
 ```
 
-The script finds veraPDF through `$VERAPDF`, then `PATH`, then
-`~/bin/verapdf/verapdf`. If it finds none, it skips the check. Set
-`VERBOSE=1` to print the full veraPDF report for each document.
+The script skips any document whose files are not given. It finds
+`csi` through `$CSI`, then `PATH`, and veraPDF through `$VERAPDF`, then
+`PATH`. If it finds no veraPDF, it skips the check. Set `VERBOSE=1` to
+print the full veraPDF report for each document. Install the egg before
+you run the script.
 
 ## Scope
 
