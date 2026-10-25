@@ -5,7 +5,6 @@
  (license "BSD")
  (category graphics)
  (author "Ivan Raikov")
- (maintainer "Ivan Raikov")
  (components (extension pdfa))
  (dependencies pdf pdf-truetype srfi-1 srfi-13 srfi-69 message-digest md5 sxml-transforms datatype)
  (test-dependencies test)
