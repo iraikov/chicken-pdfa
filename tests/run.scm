@@ -35,6 +35,25 @@
       (let ((bv (read-bytevector (file-size path) p)))
         (bytevector->byte-string bv (bytevector-length bv))))))
 
+;; True when the file at path contains the bytes of the ASCII string
+;; needle. Searches the file's bytes directly, for files too large to
+;; search as a string: in CHICKEN 6 a string holding characters above
+;; 127 is stored as UTF-8, so substring-index (below) on it takes time
+;; that grows with the square of its length.
+(define (file-contains? path needle)
+  (let* ((hay (call-with-input-file path (lambda (p) (read-bytevector (file-size path) p))))
+         (hlen (bytevector-length hay))
+         (pat (list->vector (map char->integer (string->list needle))))
+         (nlen (vector-length pat)))
+    (let loop ((i 0))
+      (cond ((> (+ i nlen) hlen) #f)
+            ((let match ((j 0))
+               (or (= j nlen)
+                   (and (= (bytevector-u8-ref hay (+ i j)) (vector-ref pat j))
+                        (match (+ j 1)))))
+             #t)
+            (else (loop (+ i 1)))))))
+
 ;; Plain substring search; returns #f if not found.
 (define (substring-index needle haystack start)
   (let ((nlen (string-length needle))
@@ -425,7 +444,7 @@
               (in-text-mode pctx (set-font pctx (embedded-font-name font) 12)
                                  (move-text pctx 72 700)
                                  (draw-encoded-text pctx font "conforming")))))
-          (test-assert (substring-index "<pdfaid:conformance>B</pdfaid:conformance>" (read-file path) 0))
+          (test-assert (file-contains? path "<pdfaid:conformance>B</pdfaid:conformance>"))
           (delete-file path)))
       (print "note: sRGB profile or Liberation Sans not found; skipping")))
 
