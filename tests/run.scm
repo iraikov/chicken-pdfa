@@ -199,23 +199,29 @@
     (delete-file path)))
 
 (test-group "write-pdfa-document: binary header comment and PDF/A claim"
+  ;; claiming PDF/A-1b requires an output intent, so this part needs the
+  ;; sRGB profile
+  (if (file-exists? +srgb-icc+)
+      (let ((path (create-temporary-file "pdf")))
+        (with-pdfa-document-to-file (pdfa-doc doc #f) path
+         (set-output-intent! pdfa-doc +srgb-icc+)
+         (with-page doc (pctx) (basic-rect pctx 0 0 10 10) (stroke pctx)))
+        (let ((contents (read-file path)))
+          (test-assert (string-prefix? "%PDF-1.4\n" contents))
+          (test '(37 226 227 207 211 10)
+                (map (lambda (i) (char->integer (string-ref contents i))) '(9 10 11 12 13 14)))
+          (test-assert (substring-index "<pdfaid:part>1</pdfaid:part>" contents 0))
+          (test-assert (substring-index "<pdfaid:conformance>B</pdfaid:conformance>" contents 0)))
+        (delete-file path))
+      (print "note: sRGB profile not found; skipping PDF/A claim check"))
+  ;; conformance #f: same header and metadata, no claim
   (let ((path (create-temporary-file "pdf")))
-    (with-pdfa-document-to-file (pdfa-doc doc #f) path
-     (when (file-exists? +srgb-icc+)
-       (set-output-intent! pdfa-doc +srgb-icc+))
+    (with-pdfa-document-to-file (pdfa-doc doc #f #f) path
      (with-page doc (pctx) (basic-rect pctx 0 0 10 10) (stroke pctx)))
     (let ((contents (read-file path)))
       (test-assert (string-prefix? "%PDF-1.4\n" contents))
       (test '(37 226 227 207 211 10)
             (map (lambda (i) (char->integer (string-ref contents i))) '(9 10 11 12 13 14)))
-      (test-assert (substring-index "<pdfaid:part>1</pdfaid:part>" contents 0))
-      (test-assert (substring-index "<pdfaid:conformance>B</pdfaid:conformance>" contents 0)))
-    (delete-file path))
-  ;; conformance #f: same metadata, no claim
-  (let ((path (create-temporary-file "pdf")))
-    (with-pdfa-document-to-file (pdfa-doc doc #f #f) path
-     (with-page doc (pctx) (basic-rect pctx 0 0 10 10) (stroke pctx)))
-    (let ((contents (read-file path)))
       (test #f (substring-index "pdfaid" contents 0))
       (test-assert (substring-index "<?xpacket begin=" contents 0)))
     (delete-file path))

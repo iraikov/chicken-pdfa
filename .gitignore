@@ -5,3 +5,14 @@
 *.scm~
 *.scm#*
 .#*.scm
+
+# editor backups
+*~
+
+# chicken-install build artifacts
+*.so
+*.o
+*.link
+*.import.scm
+*.build.sh
+*.install.sh
